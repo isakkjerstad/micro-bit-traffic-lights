@@ -136,18 +136,24 @@ while (true) {
     }
     
 }
-set_lights(false, false, false)
+set_lights(false, true, false)
 //  Start processes (operate the lights).
 if (MODE == 1) {
     control.inBackground(function master_controller() {
         /** Traffic light controller. */
         //  Change light status.
         while (true) {
+            //  Change state.
             send_control(STOP_CONTROL_SIGNAL)
+            control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             go()
+            //  Wait.
             control.waitMicros(INTERVAL_MS * MILLIS_TO_MICRO)
+            //  Change state again.
             send_control(GO_CONTROL_SIGNAL)
+            control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             stop()
+            //  Wait.
             control.waitMicros(INTERVAL_MS * MILLIS_TO_MICRO)
         }
     })
@@ -157,20 +163,20 @@ if (MODE == 1) {
         //  Matching types have same control.
         if (receivedNumber == STOP_CONTROL_SIGNAL) {
             if (TYPE == 0) {
+                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
                 go()
             } else if (TYPE == 1) {
                 stop()
-                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             } else {
                 error()
             }
             
         } else if (receivedNumber == GO_CONTROL_SIGNAL) {
             if (TYPE == 0) {
+                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
                 stop()
             } else if (TYPE == 1) {
                 go()
-                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             } else {
                 error()
             }

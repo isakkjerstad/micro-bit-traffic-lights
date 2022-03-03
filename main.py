@@ -85,18 +85,18 @@ def on_received_number(receivedNumber):
     # Matching types have same control.
     if receivedNumber == STOP_CONTROL_SIGNAL:
         if TYPE == 0:
+            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             go()
         elif TYPE == 1:
             stop()
-            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         else:
             error()
     elif receivedNumber == GO_CONTROL_SIGNAL:
         if TYPE == 0:
+            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             stop()
         elif TYPE == 1:
             go()
-            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         else:
             error()
     else:
@@ -107,11 +107,20 @@ def master_controller():
 
     # Change light status.
     while True:
+        # Change state.
         send_control(STOP_CONTROL_SIGNAL)
+        control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         go()
+
+        # Wait.
         control.wait_micros(INTERVAL_MS * MILLIS_TO_MICRO)
+
+        # Change state again.
         send_control(GO_CONTROL_SIGNAL)
+        control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         stop()
+
+        # Wait.
         control.wait_micros(INTERVAL_MS * MILLIS_TO_MICRO)
 
 # Initialize the traffic light.
@@ -155,7 +164,7 @@ while True:
         pause(500)
         break
 
-set_lights(False, False, False)
+set_lights(False, True, False)
 
 # Start processes (operate the lights).
 if MODE == 1:
