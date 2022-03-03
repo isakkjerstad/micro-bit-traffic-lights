@@ -18,7 +18,7 @@ let GO_CONTROL_SIGNAL = 1
 let START_DELAY_MS = 1200
 let STOP_DELAY_MS = 3500
 let BLINK_DELAY_MS = 2500
-let SAFETY_DELAY_MS = 3000
+let SAFETY_DELAY_MS = 6000
 let MILLIS_TO_MICRO = 1000
 function convert_bool_to_int(bool_value: boolean): number {
     /** Converts a boolean value to an integer. */
@@ -151,7 +151,6 @@ if (MODE == 1) {
             control.waitMicros(INTERVAL_MS * MILLIS_TO_MICRO)
             //  Change state again.
             send_control(GO_CONTROL_SIGNAL)
-            control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             stop()
             //  Wait.
             control.waitMicros(INTERVAL_MS * MILLIS_TO_MICRO)
@@ -173,9 +172,9 @@ if (MODE == 1) {
             
         } else if (receivedNumber == GO_CONTROL_SIGNAL) {
             if (TYPE == 0) {
-                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
                 stop()
             } else if (TYPE == 1) {
+                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
                 go()
             } else {
                 error()

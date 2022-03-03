@@ -18,7 +18,7 @@ GO_CONTROL_SIGNAL = 1
 START_DELAY_MS = 1200
 STOP_DELAY_MS = 3500
 BLINK_DELAY_MS = 2500
-SAFETY_DELAY_MS = 3000
+SAFETY_DELAY_MS = 6000
 MILLIS_TO_MICRO = 1000
 
 def convert_bool_to_int(bool_value: bool):
@@ -93,9 +93,9 @@ def on_received_number(receivedNumber):
             error()
     elif receivedNumber == GO_CONTROL_SIGNAL:
         if TYPE == 0:
-            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             stop()
         elif TYPE == 1:
+            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
             go()
         else:
             error()
@@ -117,7 +117,6 @@ def master_controller():
 
         # Change state again.
         send_control(GO_CONTROL_SIGNAL)
-        control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         stop()
 
         # Wait.
