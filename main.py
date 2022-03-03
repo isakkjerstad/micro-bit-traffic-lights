@@ -13,9 +13,12 @@ INTERVAL_MS = 20000
 RED_LIGHT_PIN = DigitalPin.P0
 YELLOW_LIGHT_PIN = DigitalPin.P1
 GREEN_LIGHT_PIN = DigitalPin.P2
+STOP_CONTROL_SIGNAL = 0
+GO_CONTROL_SIGNAL = 1
 START_DELAY_MS = 1200
 STOP_DELAY_MS = 3500
 BLINK_DELAY_MS = 2500
+SAFETY_DELAY_MS = 3000
 MILLIS_TO_MICRO = 1000
 
 def convert_bool_to_int(bool_value: bool):
@@ -80,38 +83,34 @@ def on_received_number(receivedNumber):
     """ Sets light based on control signal. """
 
     # Matching types have same control.
-    if receivedNumber == 0:
+    if receivedNumber == STOP_CONTROL_SIGNAL:
         if TYPE == 0:
             go()
         elif TYPE == 1:
             stop()
+            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         else:
             error()
-    elif receivedNumber == 1:
+    elif receivedNumber == GO_CONTROL_SIGNAL:
         if TYPE == 0:
             stop()
         elif TYPE == 1:
             go()
+            control.wait_micros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
         else:
             error()
     else:
         error()
-
-def slave_control():
-    """ Listens for input control signals. """
-
-    while True:
-        radio.on_received_number(on_received_number)
 
 def master_controller():
     """ Traffic light controller. """
 
     # Change light status.
     while True:
-        send_control(0)
+        send_control(STOP_CONTROL_SIGNAL)
         go()
         control.wait_micros(INTERVAL_MS * MILLIS_TO_MICRO)
-        send_control(1)
+        send_control(GO_CONTROL_SIGNAL)
         stop()
         control.wait_micros(INTERVAL_MS * MILLIS_TO_MICRO)
 
@@ -162,4 +161,4 @@ set_lights(False, False, False)
 if MODE == 1:
     control.in_background(master_controller)
 else:
-    control.in_background(slave_control)
+    radio.on_received_number(on_received_number)

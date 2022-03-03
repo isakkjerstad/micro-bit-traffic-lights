@@ -13,9 +13,12 @@ let INTERVAL_MS = 20000
 let RED_LIGHT_PIN = DigitalPin.P0
 let YELLOW_LIGHT_PIN = DigitalPin.P1
 let GREEN_LIGHT_PIN = DigitalPin.P2
+let STOP_CONTROL_SIGNAL = 0
+let GO_CONTROL_SIGNAL = 1
 let START_DELAY_MS = 1200
 let STOP_DELAY_MS = 3500
 let BLINK_DELAY_MS = 2500
+let SAFETY_DELAY_MS = 3000
 let MILLIS_TO_MICRO = 1000
 function convert_bool_to_int(bool_value: boolean): number {
     /** Converts a boolean value to an integer. */
@@ -140,45 +143,42 @@ if (MODE == 1) {
         /** Traffic light controller. */
         //  Change light status.
         while (true) {
-            send_control(0)
+            send_control(STOP_CONTROL_SIGNAL)
             go()
             control.waitMicros(INTERVAL_MS * MILLIS_TO_MICRO)
-            send_control(1)
+            send_control(GO_CONTROL_SIGNAL)
             stop()
             control.waitMicros(INTERVAL_MS * MILLIS_TO_MICRO)
         }
     })
 } else {
-    control.inBackground(function slave_control() {
-        /** Listens for input control signals. */
-        while (true) {
-            radio.onReceivedNumber(function on_received_number(receivedNumber: number) {
-                /** Sets light based on control signal. */
-                //  Matching types have same control.
-                if (receivedNumber == 0) {
-                    if (TYPE == 0) {
-                        go()
-                    } else if (TYPE == 1) {
-                        stop()
-                    } else {
-                        error()
-                    }
-                    
-                } else if (receivedNumber == 1) {
-                    if (TYPE == 0) {
-                        stop()
-                    } else if (TYPE == 1) {
-                        go()
-                    } else {
-                        error()
-                    }
-                    
-                } else {
-                    error()
-                }
-                
-            })
+    radio.onReceivedNumber(function on_received_number(receivedNumber: number) {
+        /** Sets light based on control signal. */
+        //  Matching types have same control.
+        if (receivedNumber == STOP_CONTROL_SIGNAL) {
+            if (TYPE == 0) {
+                go()
+            } else if (TYPE == 1) {
+                stop()
+                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
+            } else {
+                error()
+            }
+            
+        } else if (receivedNumber == GO_CONTROL_SIGNAL) {
+            if (TYPE == 0) {
+                stop()
+            } else if (TYPE == 1) {
+                go()
+                control.waitMicros(SAFETY_DELAY_MS * MILLIS_TO_MICRO)
+            } else {
+                error()
+            }
+            
+        } else {
+            error()
         }
+        
     })
 }
 
